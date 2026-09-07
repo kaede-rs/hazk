@@ -16,11 +16,9 @@ Hazkey input method for fcitx5
 
 ## インストール
 
-~~[インストールガイド](https://hazkey.hiira.dev/docs/install)~~
+[インストールガイド](https://hazkey.hiira.dev/docs/install)
 
-~~現在AURと[debianパッケージ](https://github.com/7ka-Hiira/fcitx5-hazkey/releases/latest)が利用できます。~~
-
-現在「[kaede-rs/hazk](https://github.com/kaede-rs/hazk/)」でのインストール手順はビルドのみとなっています。
+現在[Debianパッケージ](https://github.com/kaede-rs/hazk/releases/latest)のみが利用できます。
 
 ## ビルド
 
