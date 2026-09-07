@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package hazkey.dictionary;
+
+option optimize_for = LITE_RUNTIME;
+
+message UserDictionaryEntry {
+    enum WordClass {
+        WORD_CLASS_UNSPECIFIED = 0;
+        NOUN = 1;                // 一般名詞
+        PROPER_NOUN = 2;         // 固有名詞
+        PERSON_NAME = 3;         // 人名(姓名一体)
+        PERSON_FAMILY_NAME = 4;  // 人名(姓)
+        PERSON_GIVEN_NAME = 5;   // 人名(名)
+        ORGANIZATION_NAME = 6;   // 組織・団体名
+        PLACE_NAME = 7;          // 地名
+    }
+
+    // 表記(変換結果として出力される文字列)
+    string word = 1;
+    // 読み(ひらがな)
+    string reading = 2;
+    WordClass word_class = 3;
+    // 優先度
+    int32 priority = 4;
+}
+
+message GetUserDictionary {}
+
+message SetUserDictionary {
+    bool enabled = 1;
+    repeated UserDictionaryEntry entries = 2;
+}
+
+message CurrentUserDictionary {
+    bool enabled = 1;
+    repeated UserDictionaryEntry entries = 2;
+}

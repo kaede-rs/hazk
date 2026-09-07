@@ -5,6 +5,7 @@ import SwiftUtils
 class HazkeyServerState {
     let serverConfig: HazkeyServerConfig
     let converter: KanaKanjiConverter
+    let userDictionary: UserDictionaryStore
     var currentCandidateList: [Candidate]?
     var composingText: ComposingTextBox = ComposingTextBox()
 
@@ -56,6 +57,10 @@ class HazkeyServerState {
         } catch {
             NSLog("Failed to create user cache directory: \(error.localizedDescription)")
         }
+
+        // Load user dictionary and register it with the converter
+        self.userDictionary = UserDictionaryStore()
+        self.converter.importDynamicUserDictionary(userDictionary.makeDicdataElements())
 
         // Initialize base convert options
         self.baseConvertRequestOptions = serverConfig.genBaseConvertRequestOptions()
@@ -428,6 +433,58 @@ class HazkeyServerState {
 
     func clearProfileLearningData() -> Hazkey_ResponseEnvelope {
         converter.resetMemory()
+        return Hazkey_ResponseEnvelope.with {
+            $0.status = .success
+        }
+    }
+
+    /// User Dictionary
+
+    func getUserDictionary() -> Hazkey_ResponseEnvelope {
+        return Hazkey_ResponseEnvelope.with {
+            $0.status = .success
+            $0.currentUserDictionary = Hazkey_Dictionary_CurrentUserDictionary.with {
+                $0.enabled = userDictionary.enabled
+                $0.entries = userDictionary.entries.map { entry in
+                    Hazkey_Dictionary_UserDictionaryEntry.with {
+                        $0.word = entry.word
+                        $0.reading = entry.reading
+                        $0.wordClass =
+                            Hazkey_Dictionary_UserDictionaryEntry.WordClass(
+                                rawValue: entry.wordClass.rawValue) ?? .noun
+                        $0.priority = Int32(entry.priority)
+                    }
+                }
+            }
+        }
+    }
+
+    func setUserDictionary(
+        enabled: Bool, entries: [Hazkey_Dictionary_UserDictionaryEntry]
+    ) -> Hazkey_ResponseEnvelope {
+        let newEntries = entries.compactMap { protoEntry -> UserDictionaryEntry? in
+            let word = protoEntry.word.trimmingCharacters(in: .whitespacesAndNewlines)
+            let reading = protoEntry.reading.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !word.isEmpty, !reading.isEmpty else { return nil }
+            let wordClass =
+                UserDictionaryWordClass(rawValue: protoEntry.wordClass.rawValue) ?? .noun
+            return UserDictionaryEntry(
+                word: word, reading: reading, wordClass: wordClass,
+                priority: Int(protoEntry.priority))
+        }
+
+        do {
+            try userDictionary.save(enabled: enabled, entries: newEntries)
+        } catch {
+            NSLog("Failed to save user dictionary: \(error.localizedDescription)")
+            return Hazkey_ResponseEnvelope.with {
+                $0.status = .failed
+                $0.errorMessage = "Failed to save user dictionary: \(error.localizedDescription)"
+            }
+        }
+
+        converter.importDynamicUserDictionary(userDictionary.makeDicdataElements())
+
         return Hazkey_ResponseEnvelope.with {
             $0.status = .success
         }

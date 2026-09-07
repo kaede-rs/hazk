@@ -2,6 +2,7 @@ set(PROTO_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/../../protocol/base.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/../../protocol/commands.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/../../protocol/config.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../protocol/user_dictionary.proto
 )
 
 add_library(fcitx5-hazkey SHARED hazkey_state.cpp hazkey_engine.cpp hazkey_candidate.cpp hazkey_preedit.cpp hazkey_server_connector.cpp)

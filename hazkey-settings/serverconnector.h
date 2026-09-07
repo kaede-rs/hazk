@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base.pb.h"
+#include "user_dictionary.pb.h"
 
 class ServerConnector {
    public:
@@ -14,6 +15,8 @@ class ServerConnector {
     void setCurrentConfig(hazkey::config::CurrentConfig);
     bool clearAllHistory(const std::string& profileId);
     bool reloadZenzaiModel();
+    std::optional<hazkey::dictionary::CurrentUserDictionary> getUserDictionary();
+    bool setUserDictionary(const hazkey::dictionary::CurrentUserDictionary& dict);
 
     // Begin a session with persistent connection
     bool beginSession();

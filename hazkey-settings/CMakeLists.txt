@@ -29,6 +29,7 @@ set(PROTO_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/../protocol/base.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/../protocol/commands.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/../protocol/config.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/../protocol/user_dictionary.proto
 )
 
 set(PROJECT_SOURCES
@@ -74,19 +75,7 @@ qt_add_resources(hazkey-settings "translations"
     FILES ${QM_FILES}
 )
 
-if(Protobuf_VERSION VERSION_GREATER_EQUAL "3.15")
-    # 3.15 ~：stable proto3 optional support
-    message(STATUS "Using standard protobuf_generate (protobuf ${Protobuf_VERSION})")
-    protobuf_generate(
-        TARGET hazkey-settings
-        LANGUAGE cpp
-        PROTOS ${PROTO_FILES}
-        IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../protocol
-        PROTOC_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}
-    )
-elseif(Protobuf_VERSION VERSION_GREATER_EQUAL "3.12")
-    # 3.12 ~ 3.14: build with flag. cannot use PROTOC_OPTIONS.
-    # Ubuntu 22.04: v3.12.4 (2025/8/28)
+if(Protobuf_VERSION VERSION_GREATER_EQUAL "3.12")
     message(STATUS "Using manual protoc execution for proto3 optional (protobuf ${Protobuf_VERSION})")
 
     set(PROTO_SRCS)
