@@ -1,6 +1,7 @@
 # fcitx5-hazkey
 
 Hazkey input method for fcitx5
+
 [Original](https://github.com/7ka-Hiira/hazkey) by 7ka-Hiira
 
 [AzooKeyKanaKanjiConverter](https://github.com/azooKey/AzooKeyKanaKanjiConverter)を利用したIMEです
@@ -16,7 +17,9 @@ Hazkey input method for fcitx5
 ## インストール
 
 ~~[インストールガイド](https://hazkey.hiira.dev/docs/install)~~
+
 ~~現在AURと[debianパッケージ](https://github.com/7ka-Hiira/fcitx5-hazkey/releases/latest)が利用できます。~~
+
 現在「[kaede-rs/hazk](https://github.com/kaede-rs/hazk/)」でのインストール手順はビルドのみとなっています。
 
 ## ビルド
@@ -49,6 +52,7 @@ sudo ninja install
 ## 最後に
 
 本プロジェクトは[7ka-Hiira](https://github.com/7ka-Hiira)様によるオリジナル版hazkeyの設計とコードを継承しています。
+
 オリジナルの開発者である**7ka-Hiira**様に深く敬意を表します。
 
 ## ライセンス
