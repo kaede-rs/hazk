@@ -39,10 +39,10 @@ Hazkey input method for fcitx5
 JustとNinjaを利用します。
 
 ```sh
-```
 # ビルド
 just configure
 just build
+```
 
 # インストール
 just install
