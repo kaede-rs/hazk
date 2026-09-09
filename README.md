@@ -2,7 +2,7 @@
 
 Hazkey input method for fcitx5
 
-[Original](https://github.com/7ka-Hiira/hazkey) by 7ka-Hiira
+[Original](https://github.com/7ka-Hiira/hazkey) by [7ka-Hiira](https://github.com/7ka-Hiira)
 
 [AzooKeyKanaKanjiConverter](https://github.com/azooKey/AzooKeyKanaKanjiConverter)を利用したIMEです
 
@@ -36,22 +36,22 @@ Hazkey input method for fcitx5
 
 ### ソースビルド・インストール手順
 
-ninjaを利用します。
+JustとNinjaを利用します。
 
 ```sh
-git clone --recursive https://github.com/kaede-rs/hazk.git
-cd hazkey
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DGGML_VULKAN=OFF -G Ninja ..
-ninja
-sudo ninja install
 ```
+# ビルド
+just configure
+just build
+
+# インストール
+just install
 
 ## 最後に
 
-本プロジェクトは[7ka-Hiira](https://github.com/7ka-Hiira)様によるオリジナル版hazkeyの設計とコードを継承しています。
+本プロジェクトは[7ka-Hiira](https://github.com/7ka-Hiira)様によるオリジナル版[hazkey](https://github.com/7ka-Hiira/hazkey)の設計とコードを継承しています。
 
-オリジナルの開発者である**7ka-Hiira**様に深く敬意を表します。
+オリジナルの開発者である[7ka-Hiira](https://github.com/7ka-Hiira)様に深く敬意を表します。
 
 ## ライセンス
 
