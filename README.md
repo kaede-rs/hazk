@@ -42,10 +42,10 @@ JustとNinjaを利用します。
 # ビルド
 just configure
 just build
-```
 
 # インストール
 just install
+```
 
 ## 最後に
 
