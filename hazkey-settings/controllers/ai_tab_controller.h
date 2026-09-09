@@ -1,6 +1,9 @@
 #ifndef HAZKEY_SETTINGS_CONTROLLERS_AI_TAB_CONTROLLER_H_
 #define HAZKEY_SETTINGS_CONTROLLERS_AI_TAB_CONTROLLER_H_
 
+#include <QCryptographicHash>
+#include <QFile>
+#include <QFutureWatcher>
 #include <QNetworkReply>
 #include <QObject>
 #include <QString>
@@ -32,13 +35,16 @@ class AiTabController : public QObject {
 
    private slots:
     void onDownloadZenzaiModel();
+    void onDownloadReadyRead();
     void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void onDownloadFinished();
     void onDownloadError(QNetworkReply::NetworkError error);
 
    private:
-    QString calculateFileSHA256(const QString& filePath);
+    static QString calculateFileSHA256(const QString& filePath);
     void refreshWarnings();
+    void checkModelChecksumAsync(const QString& modelPath);
+    void cleanupDownloadFile();
     void populateDeviceList();
     void updateSelectionFromProfile();
 
@@ -49,6 +55,9 @@ class AiTabController : public QObject {
     QNetworkReply* currentDownload_;
     QProgressDialog* downloadProgressDialog_;
     QString zenzaiModelPath_;
+    QFile* downloadFile_;
+    QCryptographicHash downloadHash_;
+    QFutureWatcher<QString>* pendingHashWatcher_;
     std::atomic<bool> isLoading_{false};
 };
 

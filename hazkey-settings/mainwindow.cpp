@@ -3,11 +3,13 @@
 #include <QApplication>
 #include <QDebug>
 #include <QDialogButtonBox>
+#include <QFutureWatcher>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QStyle>
 #include <QTabBar>
 #include <QTimer>
+#include <QtConcurrent>
 
 #include "ui_mainwindow.h"
 
@@ -18,6 +20,13 @@ using hazkey::settings::DictionaryTabController;
 using hazkey::settings::InputStyleTabController;
 using hazkey::settings::TabContext;
 using hazkey::settings::UserInterfaceTabController;
+
+namespace {
+struct ReloadResult {
+    bool connectionFailed = false;
+    std::optional<hazkey::config::CurrentConfig> config;
+};
+}  // namespace
 
 MainWindow::MainWindow(QWidget* parent)
     : QWidget(parent),
@@ -189,49 +198,72 @@ void MainWindow::onResetConfiguration() {
         return;
     }
 
-    if (!server_.beginSession()) {
-        QMessageBox::critical(this, tr("Connection Error"),
-                              tr("Failed to connect to server."));
-        return;
-    }
+    setCursor(Qt::WaitCursor);
 
-    bool reloadSuccess = server_.reloadZenzaiModelInSession();
-    if (!reloadSuccess) {
-        qWarning() << "Failed to reload Zenzai model";
-    }
+    auto* watcher = new QFutureWatcher<ReloadResult>(this);
+    connect(watcher, &QFutureWatcher<ReloadResult>::finished, this,
+            [this, watcher]() {
+                const ReloadResult result = watcher->result();
+                watcher->deleteLater();
 
-    auto configOpt = server_.getConfigInSession();
-    server_.endSession();
+                setCursor(Qt::ArrowCursor);
+                setEnabled(true);
 
-    if (!configOpt.has_value()) {
-        QMessageBox::critical(this, tr("Configuration Error"),
-                              tr("Failed to load configuration from server."));
-        return;
-    }
+                if (result.connectionFailed) {
+                    QMessageBox::critical(this, tr("Connection Error"),
+                                          tr("Failed to connect to server."));
+                    return;
+                }
 
-    currentConfig_ = configOpt.value();
-    if (currentConfig_.profiles_size() == 0) {
-        QMessageBox::critical(this, tr("Configuration Error"),
-                              tr("No profile found in configuration."));
-        return;
-    }
+                if (!result.config.has_value()) {
+                    QMessageBox::critical(
+                        this, tr("Configuration Error"),
+                        tr("Failed to load configuration from server."));
+                    return;
+                }
 
-    currentProfile_ = currentConfig_.mutable_profiles(0);
-    if (!currentProfile_) {
-        QMessageBox::critical(this, tr("Configuration Error"),
-                              tr("Failed to access profile."));
-        return;
-    }
+                currentConfig_ = result.config.value();
+                if (currentConfig_.profiles_size() == 0) {
+                    QMessageBox::critical(
+                        this, tr("Configuration Error"),
+                        tr("No profile found in configuration."));
+                    return;
+                }
 
-    if (!loadCurrentConfig(false)) {
-        QMessageBox::critical(this, tr("Configuration Error"),
-                              tr("Failed to update UI."));
-        return;
-    }
+                currentProfile_ = currentConfig_.mutable_profiles(0);
+                if (!currentProfile_) {
+                    QMessageBox::critical(this, tr("Configuration Error"),
+                                          tr("Failed to access profile."));
+                    return;
+                }
 
-    QTimer::singleShot(0, this, [this]() {
-        QMessageBox::information(
-            this, tr("Reload Complete"),
-            tr("Configuration has been reloaded successfully."));
-    });
+                if (!loadCurrentConfig(false)) {
+                    QMessageBox::critical(this, tr("Configuration Error"),
+                                          tr("Failed to update UI."));
+                    return;
+                }
+
+                QTimer::singleShot(0, this, [this]() {
+                    QMessageBox::information(
+                        this, tr("Reload Complete"),
+                        tr("Configuration has been reloaded successfully."));
+                });
+            });
+
+    watcher->setFuture(QtConcurrent::run([this]() -> ReloadResult {
+        ReloadResult result;
+        if (!server_.beginSession()) {
+            result.connectionFailed = true;
+            return result;
+        }
+
+        bool reloadSuccess = server_.reloadZenzaiModelInSession();
+        if (!reloadSuccess) {
+            qWarning() << "Failed to reload Zenzai model";
+        }
+
+        result.config = server_.getConfigInSession();
+        server_.endSession();
+        return result;
+    }));
 }

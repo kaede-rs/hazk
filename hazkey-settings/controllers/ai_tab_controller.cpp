@@ -5,6 +5,7 @@
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
+#include <QFutureWatcher>
 #include <QLayoutItem>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
@@ -13,6 +14,7 @@
 #include <QProgressDialog>
 #include <QSignalBlocker>
 #include <QUrl>
+#include <QtConcurrent>
 
 #include "config_macros.h"
 #include "controllers/warning_widget_factory.h"
@@ -35,6 +37,9 @@ AiTabController::AiTabController(Ui::MainWindow* ui, QWidget* window,
       networkManager_(networkManager),
       currentDownload_(nullptr),
       downloadProgressDialog_(nullptr),
+      downloadFile_(nullptr),
+      downloadHash_(QCryptographicHash::Sha256),
+      pendingHashWatcher_(nullptr),
       isLoading_(false) {}
 
 void AiTabController::setContext(const TabContext& context) {
@@ -95,6 +100,13 @@ void AiTabController::saveToConfig() {
 }
 
 void AiTabController::onDownloadZenzaiModel() {
+    if (currentDownload_) {
+        QMessageBox::information(
+            window_, tr("Download in Progress"),
+            tr("A Zenzai model download is already in progress."));
+        return;
+    }
+
     QString dataHome = qEnvironmentVariable("XDG_DATA_HOME");
     if (dataHome.isEmpty()) {
         dataHome = QDir::homePath() + "/.local/share";
@@ -122,6 +134,19 @@ void AiTabController::onDownloadZenzaiModel() {
         }
     }
 
+    const QString tempPath = zenzaiModelPath_ + ".tmp";
+    downloadFile_ = new QFile(tempPath, this);
+    if (!downloadFile_->open(QIODevice::WriteOnly)) {
+        QMessageBox::critical(
+            window_, tr("Download Error"),
+            tr("Failed to open temporary file for writing: %1")
+                .arg(downloadFile_->errorString()));
+        downloadFile_->deleteLater();
+        downloadFile_ = nullptr;
+        return;
+    }
+    downloadHash_.reset();
+
     downloadProgressDialog_ = new QProgressDialog(
         tr("Downloading Zenzai model..."), tr("Cancel"), 0, 100, window_);
     downloadProgressDialog_->setWindowModality(Qt::WindowModal);
@@ -142,6 +167,8 @@ void AiTabController::onDownloadZenzaiModel() {
 
     currentDownload_ = networkManager_->get(request);
 
+    connect(currentDownload_, &QIODevice::readyRead, this,
+            &AiTabController::onDownloadReadyRead);
     connect(currentDownload_, &QNetworkReply::downloadProgress, this,
             &AiTabController::onDownloadProgress);
     connect(currentDownload_, &QNetworkReply::finished, this,
@@ -150,6 +177,20 @@ void AiTabController::onDownloadZenzaiModel() {
             QOverload<QNetworkReply::NetworkError>::of(
                 &QNetworkReply::errorOccurred),
             this, &AiTabController::onDownloadError);
+}
+
+void AiTabController::onDownloadReadyRead() {
+    if (!currentDownload_ || !downloadFile_) {
+        return;
+    }
+    const QByteArray chunk = currentDownload_->readAll();
+    if (chunk.isEmpty()) {
+        return;
+    }
+    downloadHash_.addData(chunk);
+    if (downloadFile_->write(chunk) == -1) {
+        currentDownload_->abort();
+    }
 }
 
 void AiTabController::onDownloadProgress(qint64 bytesReceived,
@@ -167,6 +208,15 @@ void AiTabController::onDownloadProgress(qint64 bytesReceived,
     }
 }
 
+void AiTabController::cleanupDownloadFile() {
+    if (!downloadFile_) return;
+    const QString path = downloadFile_->fileName();
+    downloadFile_->close();
+    QFile::remove(path);
+    downloadFile_->deleteLater();
+    downloadFile_ = nullptr;
+}
+
 void AiTabController::onDownloadFinished() {
     if (!currentDownload_) {
         return;
@@ -177,22 +227,34 @@ void AiTabController::onDownloadFinished() {
         downloadProgressDialog_ = nullptr;
     }
 
+    // readyRead() で拾いきれなかった残りバイトがあれば回収する（通常は空のはず）
+    if (currentDownload_->error() == QNetworkReply::NoError && downloadFile_) {
+        const QByteArray remaining = currentDownload_->readAll();
+        if (!remaining.isEmpty()) {
+            downloadHash_.addData(remaining);
+            downloadFile_->write(remaining);
+        }
+    }
+
     if (currentDownload_->error() != QNetworkReply::NoError) {
         currentDownload_->deleteLater();
         currentDownload_ = nullptr;
+        cleanupDownloadFile();
         return;
     }
 
-    QByteArray downloadedData = currentDownload_->readAll();
     currentDownload_->deleteLater();
     currentDownload_ = nullptr;
 
-    QCryptographicHash hash(QCryptographicHash::Sha256);
-    hash.addData(downloadedData);
-    QByteArray calculatedHash = hash.result();
-    QString calculatedHashHex = calculatedHash.toHex();
+    if (!downloadFile_) {
+        return;
+    }
 
-    QString expectedHash = kZenzaiExpectedChecksum;
+    const QString tempPath = downloadFile_->fileName();
+    downloadFile_->close();
+
+    const QString calculatedHashHex = QString(downloadHash_.result().toHex());
+    const QString expectedHash = kZenzaiExpectedChecksum;
 
     if (calculatedHashHex != expectedHash) {
         QMessageBox::critical(
@@ -201,34 +263,19 @@ void AiTabController::onDownloadFinished() {
                "Expected: %1\nGot: %2")
                 .arg(expectedHash)
                 .arg(calculatedHashHex));
-        return;
-    }
-
-    QString tempPath = zenzaiModelPath_ + ".tmp";
-    QFile tempFile(tempPath);
-    if (!tempFile.open(QIODevice::WriteOnly)) {
-        QMessageBox::critical(
-            window_, tr("Download Error"),
-            tr("Failed to save model file: %1").arg(tempFile.errorString()));
-        return;
-    }
-
-    if (tempFile.write(downloadedData) == -1) {
-        QMessageBox::critical(
-            window_, tr("Download Error"),
-            tr("Failed to write model file: %1").arg(tempFile.errorString()));
-        tempFile.close();
         QFile::remove(tempPath);
+        downloadFile_->deleteLater();
+        downloadFile_ = nullptr;
         return;
     }
-
-    tempFile.close();
 
     if (QFile::exists(zenzaiModelPath_)) {
         if (!QFile::remove(zenzaiModelPath_)) {
             QMessageBox::critical(window_, tr("Download Error"),
                                   tr("Failed to remove old model file."));
             QFile::remove(tempPath);
+            downloadFile_->deleteLater();
+            downloadFile_ = nullptr;
             return;
         }
     }
@@ -237,8 +284,13 @@ void AiTabController::onDownloadFinished() {
         QMessageBox::critical(window_, tr("Download Error"),
                               tr("Failed to rename model file."));
         QFile::remove(tempPath);
+        downloadFile_->deleteLater();
+        downloadFile_ = nullptr;
         return;
     }
+
+    downloadFile_->deleteLater();
+    downloadFile_ = nullptr;
 
     if (context_.server) {
         context_.server->reloadZenzaiModel();
@@ -263,6 +315,7 @@ void AiTabController::onDownloadError(QNetworkReply::NetworkError error) {
     QString errorString = currentDownload_->errorString();
     currentDownload_->deleteLater();
     currentDownload_ = nullptr;
+    cleanupDownloadFile();
 
     if (error != QNetworkReply::OperationCanceledError) {
         QMessageBox::critical(
@@ -331,19 +384,45 @@ void AiTabController::refreshWarnings() {
         QString modelPath =
             QString::fromStdString(context_.currentConfig->zenzai_model_path());
         if (!modelPath.isEmpty()) {
-            QString currentChecksum = calculateFileSHA256(modelPath);
-            QString expectedChecksum = kZenzaiExpectedChecksum;
-
-            if (!currentChecksum.isEmpty() &&
-                currentChecksum != expectedChecksum) {
-                QWidget* warningWidget = WarningWidgetFactory::create(
-                    tr("The current model is not the latest version."),
-                    "lightblue", tr("Download Update"),
-                    [this]() { onDownloadZenzaiModel(); });
-                ui_->aiTabScrollContentsLayout->insertWidget(1, warningWidget);
-            }
+            checkModelChecksumAsync(modelPath);
         }
     }
+}
+
+void AiTabController::checkModelChecksumAsync(const QString& modelPath) {
+    if (pendingHashWatcher_) {
+        return;
+    }
+
+    auto* watcher = new QFutureWatcher<QString>(this);
+    pendingHashWatcher_ = watcher;
+
+    connect(watcher, &QFutureWatcher<QString>::finished, this,
+            [this, watcher, modelPath]() {
+                const QString hash = watcher->result();
+                watcher->deleteLater();
+                if (pendingHashWatcher_ == watcher) {
+                    pendingHashWatcher_ = nullptr;
+                }
+
+                if (!context_.currentConfig ||
+                    QString::fromStdString(
+                        context_.currentConfig->zenzai_model_path()) != modelPath) {
+                    return;
+                }
+
+                const QString expectedChecksum = kZenzaiExpectedChecksum;
+                if (!hash.isEmpty() && hash != expectedChecksum) {
+                    QWidget* warningWidget = WarningWidgetFactory::create(
+                        tr("The current model is not the latest version."),
+                        "lightblue", tr("Download Update"),
+                        [this]() { onDownloadZenzaiModel(); });
+                    ui_->aiTabScrollContentsLayout->insertWidget(1, warningWidget);
+                }
+            });
+
+    watcher->setFuture(QtConcurrent::run(
+        [modelPath]() { return AiTabController::calculateFileSHA256(modelPath); }));
 }
 
 void AiTabController::populateDeviceList() {

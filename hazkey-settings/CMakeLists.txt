@@ -17,7 +17,7 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets LinguistTools Network)
+find_package(Qt6 REQUIRED COMPONENTS Widgets LinguistTools Network Concurrent)
 find_package(Protobuf REQUIRED)
 
 set(TS_FILES hazkey-settings_ja_JP.ts)
@@ -118,6 +118,7 @@ target_include_directories(hazkey-settings PRIVATE
 target_link_libraries(hazkey-settings PRIVATE
     Qt6::Widgets
     Qt6::Network
+    Qt6::Concurrent
     ${Protobuf_LITE_LIBRARIES}
 )
 

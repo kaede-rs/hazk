@@ -4,48 +4,47 @@
 <context>
     <name>AiTabController</name>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="109"/>
-        <location filename="controllers/ai_tab_controller.cpp" line="199"/>
-        <location filename="controllers/ai_tab_controller.cpp" line="211"/>
-        <location filename="controllers/ai_tab_controller.cpp" line="218"/>
-        <location filename="controllers/ai_tab_controller.cpp" line="229"/>
-        <location filename="controllers/ai_tab_controller.cpp" line="237"/>
-        <location filename="controllers/ai_tab_controller.cpp" line="269"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="121"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="141"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="261"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="274"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="284"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="322"/>
         <source>Download Error</source>
         <translation>ダウンロードエラー</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="110"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="122"/>
         <source>Failed to create directory: %1</source>
         <translation>ディレクトリの作成に失敗しました: %1</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="116"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="128"/>
         <source>File Exists</source>
         <translation>ファイルが存在します</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="117"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="129"/>
         <source>Overwrite the existing Zenzai model?</source>
         <translation>既存のZenzaiモデルファイルを上書きしますか?</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="126"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="151"/>
         <source>Downloading Zenzai model...</source>
         <translation>Zenzaiモデルをダウンロード中...</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="126"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="151"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="164"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="205"/>
         <source>Downloading Zenzai model... %1 MB / %2 MB</source>
         <translation>Zenzaiモデルをダウンロード中... %1 MB / %2 MB</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="200"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="262"/>
         <source>Downloaded file verification failed. Checksum mismatch.
 Expected: %1
 Got: %2</source>
@@ -54,64 +53,77 @@ Got: %2</source>
 取得地: %2</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="212"/>
         <source>Failed to save model file: %1</source>
-        <translation>モデルファイルの保存に失敗しました: %1</translation>
+        <translation type="vanished">モデルファイルの保存に失敗しました: %1</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="219"/>
         <source>Failed to write model file: %1</source>
-        <translation>モデルファイルの書き込みに失敗しました: %1</translation>
+        <translation type="vanished">モデルファイルの書き込みに失敗しました: %1</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="230"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="105"/>
+        <source>Download in Progress</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="controllers/ai_tab_controller.cpp" line="106"/>
+        <source>A Zenzai model download is already in progress.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="controllers/ai_tab_controller.cpp" line="142"/>
+        <source>Failed to open temporary file for writing: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="controllers/ai_tab_controller.cpp" line="275"/>
         <source>Failed to remove old model file.</source>
         <translation>古いモデルファイルの削除に失敗しました。</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="238"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="285"/>
         <source>Failed to rename model file.</source>
         <translation>モデルファイルの名前変更に失敗しました。</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="248"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="300"/>
         <source>Download Complete</source>
         <translation>ダウンロード完了</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="249"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="301"/>
         <source>Zenzai model has been downloaded successfully.
 Please push &apos;Reload&apos; to refresh the UI.</source>
         <translation>Zenzaiモデルが正常にダウンロードされました。
 UIを更新するには再読み込みボタンを押してください。</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="270"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="323"/>
         <source>Failed to download Zenzai model: %1</source>
         <translation>Zenzaiモデルのダウンロードに失敗しました: %1</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="311"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="364"/>
         <source>&lt;b&gt;Warning:&lt;/b&gt; Zenzai support not installed.</source>
         <translation>&lt;b&gt;警告:&lt;/b&gt; Zenzaiサポートがインストールされていません。</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="321"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="374"/>
         <source>&lt;b&gt;Warning:&lt;/b&gt; Zenzai model not found.</source>
         <translation>&lt;b&gt;警告:&lt;/b&gt; Zenzaiモデルが見つかりません。</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="322"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="375"/>
         <source>Download Model</source>
         <translation>モデルをダウンロード</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="340"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="417"/>
         <source>The current model is not the latest version.</source>
         <translation>現在のZenzaiモデルは最新バージョンではありません。</translation>
     </message>
     <message>
-        <location filename="controllers/ai_tab_controller.cpp" line="341"/>
+        <location filename="controllers/ai_tab_controller.cpp" line="418"/>
         <source>Download Update</source>
         <translation>更新をダウンロード</translation>
     </message>
@@ -119,115 +131,115 @@ UIを更新するには再読み込みボタンを押してください。</tran
 <context>
     <name>DictionaryTabController</name>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="35"/>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="58"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="43"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="66"/>
         <source>Noun</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="37"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="45"/>
         <source>Proper noun</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="39"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="47"/>
         <source>Person name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="41"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="49"/>
         <source>Family name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="43"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="51"/>
         <source>Given name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="45"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="53"/>
         <source>Organization name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="47"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="55"/>
         <source>Place name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="106"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="113"/>
         <source>Word</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="107"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="114"/>
         <source>Reading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="108"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="115"/>
         <source>Word Class</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="109"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="116"/>
         <source>Priority</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="251"/>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="264"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="256"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="269"/>
         <source>Import User Dictionary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="252"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="257"/>
         <source>Tab-separated values (*.tsv *.txt);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="257"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="262"/>
         <source>Import Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="258"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="263"/>
         <source>Could not open the selected file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="265"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="270"/>
         <source>Replace the current entries with the imported file?
 Choose &quot;No&quot; to append the imported entries instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="281"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="286"/>
         <source>Import Complete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="282"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="287"/>
         <source>Imported %1 entries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="287"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="292"/>
         <source>Export User Dictionary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="288"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="293"/>
         <source>Tab-separated values (*.tsv);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="293"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="298"/>
         <source>Export Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="controllers/dictionary_tab_controller.cpp" line="294"/>
+        <location filename="controllers/dictionary_tab_controller.cpp" line="299"/>
         <source>Could not write to the selected file.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -781,97 +793,97 @@ Choose &quot;No&quot; to append the imported entries instead.</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/7ka-Hiira/fcitx5-hazkey/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;不具合報告&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="48"/>
-        <location filename="mainwindow.cpp" line="207"/>
-        <location filename="mainwindow.cpp" line="214"/>
-        <location filename="mainwindow.cpp" line="221"/>
-        <location filename="mainwindow.cpp" line="227"/>
+        <location filename="mainwindow.cpp" line="57"/>
+        <location filename="mainwindow.cpp" line="220"/>
+        <location filename="mainwindow.cpp" line="228"/>
+        <location filename="mainwindow.cpp" line="235"/>
+        <location filename="mainwindow.cpp" line="241"/>
         <source>Configuration Error</source>
         <translation>設定エラー</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="49"/>
+        <location filename="mainwindow.cpp" line="58"/>
         <source>Failed to load configuration. Please check your connection to the hazkey server.</source>
         <translation>設定の読み込みに失敗しました。hazkeyサーバーへの接続を確認してください。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="155"/>
+        <location filename="mainwindow.cpp" line="164"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="156"/>
+        <location filename="mainwindow.cpp" line="165"/>
         <source>No configuration profile loaded.</source>
         <translation>設定プロファイルが読み込まれていません。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="171"/>
-        <location filename="mainwindow.cpp" line="176"/>
+        <location filename="mainwindow.cpp" line="180"/>
+        <location filename="mainwindow.cpp" line="185"/>
         <source>Save Error</source>
         <translation>保存エラー</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="172"/>
+        <location filename="mainwindow.cpp" line="181"/>
         <source>Failed to save configuration: %1</source>
         <translation>設定の保存に失敗しました: %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="177"/>
+        <location filename="mainwindow.cpp" line="186"/>
         <source>An unknown error occurred while saving configuration.</source>
         <translation>設定の保存中に不明なエラーが発生しました。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="35"/>
+        <location filename="mainwindow.cpp" line="44"/>
         <source>Reload</source>
         <translation>再読み込み</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="184"/>
+        <location filename="mainwindow.cpp" line="193"/>
         <source>Reload Configuration</source>
         <translation>設定を再読み込み</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="185"/>
+        <location filename="mainwindow.cpp" line="194"/>
         <source>Reloading will discard any unsaved changes. Continue?</source>
         <translation>再読み込みすると、保存されていない変更は失われます。続行しますか？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="193"/>
+        <location filename="mainwindow.cpp" line="213"/>
         <source>Connection Error</source>
         <translation>接続エラー</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="194"/>
+        <location filename="mainwindow.cpp" line="214"/>
         <source>Failed to connect to server.</source>
         <translation>サーバーへの接続に失敗しました。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="208"/>
+        <location filename="mainwindow.cpp" line="221"/>
         <source>Failed to load configuration from server.</source>
         <translation>サーバーから設定を読み込めませんでした。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="215"/>
+        <location filename="mainwindow.cpp" line="229"/>
         <source>No profile found in configuration.</source>
         <translation>設定にプロファイルが見つかりません。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="222"/>
+        <location filename="mainwindow.cpp" line="236"/>
         <source>Failed to access profile.</source>
         <translation>プロファイルへのアクセスに失敗しました。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="228"/>
+        <location filename="mainwindow.cpp" line="242"/>
         <source>Failed to update UI.</source>
         <translation>UIの更新に失敗しました。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="234"/>
+        <location filename="mainwindow.cpp" line="248"/>
         <source>Reload Complete</source>
         <translation>再読み込み完了</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="235"/>
+        <location filename="mainwindow.cpp" line="249"/>
         <source>Configuration has been reloaded successfully.</source>
         <translation>設定が正常に再読み込みされました。</translation>
     </message>

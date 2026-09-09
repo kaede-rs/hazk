@@ -2,7 +2,7 @@ import Foundation
 import SwiftGlibc
 import XCTest
 
-@testable import hazkeyServer
+@testable import hazkey_server
 
 // MARK: - Test Configuration
 struct TestConfig {
@@ -11,72 +11,95 @@ struct TestConfig {
   static let maxRetries = 3
 }
 
-// MARK: - Test Data Builders
-struct QueryDataBuilder {
-  static func setConfig(
-    commaStyle: Int32 = 0,
-    numberFullwidth: Int32 = 0,
-    periodStyle: Int32 = 0,
-    spaceFullwidth: Int32 = 0,
-    symbolFullwidth: Int32 = 0,
-    tenCombining: Int32 = 0,
-    zenzaiEnabled: Bool = false,
-    zenzaiInferLimit: Int32 = 1
-  ) -> Hazkey_Commands_QueryData {
-    var query = Hazkey_Commands_QueryData()
-    query.function = .setConfig
-    query.setConfig = Hazkey_Commands_QueryData.SetConfigProps.with {
-      $0.commaStyle = commaStyle
-      $0.numberFullwidth = numberFullwidth
-      $0.periodStyle = periodStyle
-      $0.profileText = ""
-      $0.spaceFullwidth = spaceFullwidth
-      $0.symbolFullwidth = symbolFullwidth
-      $0.tenCombining = tenCombining
-      $0.zenzaiEnabled = zenzaiEnabled
-      $0.zenzaiInferLimit = zenzaiInferLimit
-    }
-    return query
+enum QueryBuilder {
+  static func newComposingText() -> Hazkey_RequestEnvelope {
+    var req = Hazkey_RequestEnvelope()
+    req.newComposingText = Hazkey_Commands_NewComposingText()
+    return req
   }
 
-  static func inputText(_ text: String, isDirect: Bool = false) -> Hazkey_Commands_QueryData {
-    var query = Hazkey_Commands_QueryData()
-    query.function = .inputText
-    query.inputText = Hazkey_Commands_QueryData.InputTextProps.with {
-      $0.text = text
-      $0.isDirect = isDirect
-    }
-    return query
+  static func inputText(_ text: String) -> Hazkey_RequestEnvelope {
+    var req = Hazkey_RequestEnvelope()
+    req.inputChar.text = text
+    return req
+  }
+
+  static func shiftKeyEvent(isRelease: Bool) -> Hazkey_RequestEnvelope {
+    var req = Hazkey_RequestEnvelope()
+    req.modifierEvent.modType = .shift
+    req.modifierEvent.eventType = isRelease ? .release : .press
+    return req
   }
 
   static func getComposingString(
-    charType: Hazkey_Commands_QueryData.GetComposingStringProps.CharType = .hiragana
-  ) -> Hazkey_Commands_QueryData {
-    var query = Hazkey_Commands_QueryData()
-    query.function = .getComposingString
-    query.getComposingString = Hazkey_Commands_QueryData.GetComposingStringProps.with {
-      $0.charType = charType
-    }
-    return query
+    charType: Hazkey_Commands_GetComposingString.CharType = .hiragana
+  ) -> Hazkey_RequestEnvelope {
+    var req = Hazkey_RequestEnvelope()
+    req.getComposingString.charType = charType
+    return req
   }
 
-  static func createComposingTextInstance() -> Hazkey_Commands_QueryData {
-    var query = Hazkey_Commands_QueryData()
-    query.function = .createComposingTextInstance
-    return query
+  static func getCandidates(isSuggest: Bool = false) -> Hazkey_RequestEnvelope {
+    var req = Hazkey_RequestEnvelope()
+    req.getCandidates.isSuggest = isSuggest
+    return req
   }
 
-  static func getCandidates(
-    nBest: Int32 = 9,
-    isPredictMode: Bool = false
-  ) -> Hazkey_Commands_QueryData {
-    var query = Hazkey_Commands_QueryData()
-    query.function = .getCandidates
-    query.getCandidates = Hazkey_Commands_QueryData.GetCandidatesProps.with {
-      $0.nBest = nBest
-      $0.isPredictMode = isPredictMode
+  static func getConfig() -> Hazkey_RequestEnvelope {
+    var req = Hazkey_RequestEnvelope()
+    req.getConfig = Hazkey_Config_GetConfig()
+    return req
+  }
+
+  static func setConfig(profiles: [Hazkey_Config_Profile]) -> Hazkey_RequestEnvelope {
+    var req = Hazkey_RequestEnvelope()
+    req.setConfig.profiles = profiles
+    return req
+  }
+
+  static func deleteLeft() -> Hazkey_RequestEnvelope {
+    var req = Hazkey_RequestEnvelope()
+    req.deleteLeft = Hazkey_Commands_DeleteLeft()
+    return req
+  }
+
+  static func deleteRight() -> Hazkey_RequestEnvelope {
+    var req = Hazkey_RequestEnvelope()
+    req.deleteRight = Hazkey_Commands_DeleteRight()
+    return req
+  }
+}
+
+// MARK: - Profile mutation helpers
+enum ProfileMutation {
+  static func withKeymap(
+    _ profile: Hazkey_Config_Profile, name: String, enabled: Bool
+  ) -> Hazkey_Config_Profile {
+    var mutated = profile
+    var keymaps = mutated.enabledKeymaps.filter { $0.name != name }
+    if enabled {
+      keymaps.append(
+        Hazkey_Config_Profile.EnabledKeymap.with {
+          $0.name = name
+          $0.isBuiltIn = true
+          $0.filename = name
+        })
     }
-    return query
+    mutated.enabledKeymaps = keymaps
+    return mutated
+  }
+
+  static func withZenzai(
+    _ profile: Hazkey_Config_Profile,
+    enabled: Bool,
+    inferLimit: Int32? = nil,
+    profileText: String? = nil
+  ) -> Hazkey_Config_Profile {
+    var mutated = profile
+    mutated.zenzaiEnable = enabled
+    if let inferLimit { mutated.zenzaiInferLimit = inferLimit }
+    if let profileText { mutated.zenzaiProfile = profileText }
+    return mutated
   }
 }
 
@@ -138,7 +161,7 @@ class HazkeyServerClient {
     }
   }
 
-  func sendQuery(_ query: Hazkey_Commands_QueryData) throws -> Hazkey_Commands_ResultData {
+  func sendQuery(_ query: Hazkey_RequestEnvelope) throws -> Hazkey_ResponseEnvelope {
     guard let socket = socket else {
       throw TestError.notConnected
     }
@@ -146,7 +169,7 @@ class HazkeyServerClient {
     let reqData = try query.serializedData()
     let responseData = try sendRequest(reqData, socket: socket)
 
-    return try Hazkey_Commands_ResultData(serializedBytes: responseData)
+    return try Hazkey_ResponseEnvelope(serializedBytes: responseData)
   }
 
   private func sendRequest(_ reqData: Data, socket: Int32) throws -> Data {

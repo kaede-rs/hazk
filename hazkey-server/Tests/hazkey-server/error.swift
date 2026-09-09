@@ -1,24 +1,20 @@
 import Foundation
 import XCTest
 
-@testable import hazkeyServer
+@testable import hazkey_server
 
 final class ErrorHandlingTests: BaseHazkeyServerTestCase {
 
   func testInvalidCharacterTypeInGetComposingString() throws {
     // First input some text
-    let inputQuery = QueryDataBuilder.inputText("あ")
-    let inputResponse = try sendQuery(inputQuery)
+    let inputResponse = try sendQuery(QueryBuilder.inputText("あ"))
     XCTAssertEqual(inputResponse.status, .success)
 
     // Try to get composing string with invalid character type
-    var query = Hazkey_Commands_QueryData()
-    query.function = .getComposingString
-    query.getComposingString = Hazkey_Commands_QueryData.GetComposingStringProps.with {
-      $0.charType = .UNRECOGNIZED(999)  // Invalid char type
-    }
+    var request = Hazkey_RequestEnvelope()
+    request.getComposingString.charType = .UNRECOGNIZED(999)  // Invalid char type
 
-    let response = try sendQuery(query)
+    let response = try sendQuery(request)
     XCTAssertEqual(response.status, .failed, "Invalid character type should result in failure")
     XCTAssertFalse(
       response.errorMessage.isEmpty, "Should provide error message for invalid character type")
@@ -26,25 +22,21 @@ final class ErrorHandlingTests: BaseHazkeyServerTestCase {
 
   func testMultipleComposingTextInstanceCreation() throws {
     // Create first instance
-    let firstInstanceQuery = QueryDataBuilder.createComposingTextInstance()
-    let firstResponse = try sendQuery(firstInstanceQuery)
+    let firstResponse = try sendQuery(QueryBuilder.newComposingText())
     XCTAssertEqual(firstResponse.status, .success)
 
     // Add some input
-    let inputQuery = QueryDataBuilder.inputText("test")
-    let inputResponse = try sendQuery(inputQuery)
+    let inputResponse = try sendQuery(QueryBuilder.inputText("test"))
     XCTAssertEqual(inputResponse.status, .success)
 
     // Create second instance (should reset the first one)
-    let secondInstanceQuery = QueryDataBuilder.createComposingTextInstance()
-    let secondResponse = try sendQuery(secondInstanceQuery)
+    let secondResponse = try sendQuery(QueryBuilder.newComposingText())
     XCTAssertEqual(secondResponse.status, .success)
 
     // Check that composing text is reset
-    let getStringQuery = QueryDataBuilder.getComposingString()
-    let stringResponse = try sendQuery(getStringQuery)
+    let stringResponse = try sendQuery(QueryBuilder.getComposingString())
     XCTAssertEqual(stringResponse.status, .success)
-    XCTAssertEqual(stringResponse.result, "", "New instance should have empty composing text")
+    XCTAssertEqual(stringResponse.text, "", "New instance should have empty composing text")
   }
 
   func testLargeInputString() throws {
@@ -52,13 +44,11 @@ final class ErrorHandlingTests: BaseHazkeyServerTestCase {
     let largeString = String(repeating: "あ", count: 1000)
 
     // Note: The server only processes the first Unicode character
-    let inputQuery = QueryDataBuilder.inputText(largeString)
-    let inputResponse = try sendQuery(inputQuery)
+    let inputResponse = try sendQuery(QueryBuilder.inputText(largeString))
     XCTAssertEqual(inputResponse.status, .success, "Large input should succeed")
 
-    let getStringQuery = QueryDataBuilder.getComposingString()
-    let stringResponse = try sendQuery(getStringQuery)
+    let stringResponse = try sendQuery(QueryBuilder.getComposingString())
     XCTAssertEqual(stringResponse.status, .success)
-    XCTAssertEqual(stringResponse.result, "あ", "Should only process first character")
+    XCTAssertEqual(stringResponse.text, "あ", "Should only process first character")
   }
 }

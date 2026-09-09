@@ -15,7 +15,7 @@ class HazkeyPreedit {
     // set the preedit text; prediction mode (not highlighted)
     void setSimplePreedit(const std::string &text);
     // set the preedit text; multi-segment mode
-    void setMultiSegmentPreedit(std::vector<std::string> &texts, int cursor);
+    void setMultiSegmentPreedit(std::vector<std::string> &texts, int cursor = 0);
     // set the preedit text
     void setPreedit(Text text);
     // commit the preedit text

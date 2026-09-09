@@ -5,6 +5,10 @@ import SwiftProtobuf
 let KEYMAP_FILE_SIZE_LIMIT = 1024 * 1024  //1MB
 let TABLE_FILE_SIZE_LIMIT = 1024 * 1024  //1MB
 
+enum HazkeyConfigError: Error {
+    case invalidConfigFormat
+}
+
 let builtInKeymaps = [
     "JIS Kana",
     "Japanese Symbol",
@@ -113,10 +117,7 @@ class HazkeyServerConfig {
                     })
             }
         } catch {
-            return Hazkey_ResponseEnvelope.with {
-                $0.status = .failed
-                $0.errorMessage = "Failed to get user keymap files: \(error)"
-            }
+            NSLog("Failed to load user keymap files, continuing with built-in keymaps only: \(error)")
         }
 
         let userInputTableDir = Self.getConfigDirectory().appendingPathComponent(
@@ -150,10 +151,7 @@ class HazkeyServerConfig {
                     })
             }
         } catch {
-            return Hazkey_ResponseEnvelope.with {
-                $0.status = .failed
-                $0.errorMessage = "Failed to get user input table files: \(error)"
-            }
+            NSLog("Failed to load user input table files, continuing with built-in tables only: \(error)")
         }
 
         var zenzaiDevices: [Hazkey_Config_BackendDevice] = []
@@ -312,9 +310,12 @@ class HazkeyServerConfig {
         // Read file contents
         let jsonData = try Data(contentsOf: configPath)
 
-        // Parse JSON array
-        let jsonArray =
-            try JSONSerialization.jsonObject(with: jsonData, options: []) as! [[String: Any]]
+        guard
+            let jsonArray = try JSONSerialization.jsonObject(with: jsonData, options: [])
+                as? [[String: Any]]
+        else {
+            throw HazkeyConfigError.invalidConfigFormat
+        }
 
         var configs: [Hazkey_Config_Profile] = []
         var decodeOptions = JSONDecodingOptions()

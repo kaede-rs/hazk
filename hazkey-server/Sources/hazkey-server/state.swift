@@ -185,17 +185,21 @@ class HazkeyServerState {
     }
 
     func completePrefix(candidateIndex: Int) -> Hazkey_ResponseEnvelope {
-        if let completedCandidate = currentCandidateList?[candidateIndex] {
-            composingText.value.prefixComplete(composingCount: completedCandidate.composingCount)
-            converter.setCompletedData(completedCandidate)
-            converter.updateLearningData(completedCandidate)
-            learningDataNeedsCommit = true
-        } else {
+        guard let candidateList = currentCandidateList,
+            candidateList.indices.contains(candidateIndex)
+        else {
             return Hazkey_ResponseEnvelope.with {
                 $0.status = .failed
                 $0.errorMessage = "Candidate index \(candidateIndex) not found."
             }
         }
+
+        let completedCandidate = candidateList[candidateIndex]
+        composingText.value.prefixComplete(composingCount: completedCandidate.composingCount)
+        converter.setCompletedData(completedCandidate)
+        converter.updateLearningData(completedCandidate)
+        learningDataNeedsCommit = true
+
         return Hazkey_ResponseEnvelope.with {
             $0.status = .success
         }

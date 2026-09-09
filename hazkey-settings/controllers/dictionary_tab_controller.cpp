@@ -30,6 +30,14 @@ constexpr int kColumnWordClass = 2;
 constexpr int kColumnPriority = 3;
 constexpr int kDefaultPriority = 50;
 
+QString sanitizeTsvField(const QString& value) {
+    QString sanitized = value;
+    sanitized.remove(QLatin1Char('\t'));
+    sanitized.remove(QLatin1Char('\n'));
+    sanitized.remove(QLatin1Char('\r'));
+    return sanitized;
+}
+
 QList<QPair<int, QString>> wordClassOptions() {
     return {
         {UserDictionaryEntry::NOUN, DictionaryTabController::tr("Noun")},
@@ -295,8 +303,9 @@ void DictionaryTabController::onExport() {
     QTextStream out(&file);
     out.setEncoding(QStringConverter::Utf8);
     for (int row = 0; row < model_->rowCount(); ++row) {
-        const QString word = model_->item(row, kColumnWord)->text();
-        const QString reading = model_->item(row, kColumnReading)->text();
+        const QString word = sanitizeTsvField(model_->item(row, kColumnWord)->text());
+        const QString reading =
+            sanitizeTsvField(model_->item(row, kColumnReading)->text());
         const int wordClass =
             model_->item(row, kColumnWordClass)->data(Qt::UserRole).toInt();
         const QString priority = model_->item(row, kColumnPriority)->text();

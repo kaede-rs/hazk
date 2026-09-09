@@ -29,7 +29,7 @@ void HazkeyPreedit::setSimplePreedit(const std::string &text) {
 }
 
 void HazkeyPreedit::setMultiSegmentPreedit(std::vector<std::string> &texts,
-                                           int cursorSegment = 0) {
+                                           int cursorSegment) {
     auto preedit = Text();
     for (int i = 0; size_t(i) < texts.size(); i++) {
         if (i < cursorSegment) {

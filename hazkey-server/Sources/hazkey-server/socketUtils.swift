@@ -11,6 +11,8 @@ enum SocketError: Error {
 }
 
 func readData(from fd: Int32, count: Int) throws -> Data {
+    guard count > 0 else { return Data() }
+
     var buffer = Data(count: count)
     var bytesRead = 0
 
@@ -42,6 +44,8 @@ func readData(from fd: Int32, count: Int) throws -> Data {
 }
 
 func writeData(to fd: Int32, data: Data) throws {
+    guard !data.isEmpty else { return }
+
     var bytesWritten = 0
 
     try data.withUnsafeBytes { bufPtr in

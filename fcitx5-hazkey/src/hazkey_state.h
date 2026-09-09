@@ -5,6 +5,8 @@
 #include <fcitx/inputpanel.h>
 #include <fcitx/surroundingtext.h>
 
+#include <optional>
+
 #include "hazkey_candidate.h"
 #include "hazkey_preedit.h"
 
@@ -116,6 +118,8 @@ class HazkeyState : public InputContextProperty {
     InputContext* ic_;
     // preedit class
     HazkeyPreedit preedit_;
+
+    std::optional<bool> composingEmptyHint_ = true;
 };
 
 }  // namespace fcitx

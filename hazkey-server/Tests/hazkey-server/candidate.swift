@@ -1,19 +1,18 @@
 import Foundation
 import XCTest
 
-@testable import hazkeyServer
+@testable import hazkey_server
 
 final class CandidateTests: BaseHazkeyServerTestCase {
 
   func testGetCandidatesWithEmptyInput() throws {
-    let candidatesQuery = QueryDataBuilder.getCandidates()
-    let candidatesResponse = try sendQuery(candidatesQuery)
+    let candidatesResponse = try sendQuery(QueryBuilder.getCandidates())
 
     XCTAssertEqual(
       candidatesResponse.status, .success, "Getting candidates should succeed even with empty input"
     )
 
-    if case .candidates(let candidatesResult) = candidatesResponse.props {
+    if case .candidates(let candidatesResult) = candidatesResponse.payload {
       XCTAssertTrue(
         candidatesResult.candidates.isEmpty || candidatesResult.candidates.count > 0,
         "Should return candidates array (empty or populated)")
@@ -24,16 +23,14 @@ final class CandidateTests: BaseHazkeyServerTestCase {
 
   func testGetCandidatesWithHiraganaInput() throws {
     // Input some hiragana
-    let inputQuery = QueryDataBuilder.inputText("あい")
-    let inputResponse = try sendQuery(inputQuery)
+    let inputResponse = try sendQuery(QueryBuilder.inputText("あい"))
     XCTAssertEqual(inputResponse.status, .success)
 
-    let candidatesQuery = QueryDataBuilder.getCandidates(nBest: 5)
-    let candidatesResponse = try sendQuery(candidatesQuery)
+    let candidatesResponse = try sendQuery(QueryBuilder.getCandidates())
 
     XCTAssertEqual(candidatesResponse.status, .success, "Getting candidates should succeed")
 
-    if case .candidates(let candidatesResult) = candidatesResponse.props {
+    if case .candidates(let candidatesResult) = candidatesResponse.payload {
       XCTAssertFalse(
         candidatesResult.candidates.isEmpty, "Should return some candidates for hiragana input")
 
@@ -47,35 +44,51 @@ final class CandidateTests: BaseHazkeyServerTestCase {
   }
 
   func testGetCandidatesWithNBestLimit() throws {
-    let inputQuery = QueryDataBuilder.inputText("あ")
-    let inputResponse = try sendQuery(inputQuery)
+    let configResponse = try sendQuery(QueryBuilder.getConfig())
+    XCTAssertEqual(configResponse.status, .success)
+    guard var profile = configResponse.currentConfig.profiles.first else {
+      XCTFail("No profile returned")
+      return
+    }
+    let limit: Int32 = 3
+    profile.numCandidatesPerPage = limit
+    let setResponse = try sendQuery(QueryBuilder.setConfig(profiles: [profile]))
+    XCTAssertEqual(setResponse.status, .success)
+
+    let inputResponse = try sendQuery(QueryBuilder.inputText("あ"))
     XCTAssertEqual(inputResponse.status, .success)
 
-    let nBest: Int32 = 3
-    let candidatesQuery = QueryDataBuilder.getCandidates(nBest: nBest)
-    let candidatesResponse = try sendQuery(candidatesQuery)
-
+    let candidatesResponse = try sendQuery(QueryBuilder.getCandidates())
     XCTAssertEqual(candidatesResponse.status, .success)
 
-    if case .candidates(let candidatesResult) = candidatesResponse.props {
-      XCTAssertTrue(candidatesResult.candidates.count >= 0, "Should return candidates array")
+    if case .candidates(let candidatesResult) = candidatesResponse.payload {
+      XCTAssertLessThanOrEqual(
+        candidatesResult.candidates.count, Int(limit),
+        "Should not return more candidates than num_candidates_per_page")
     } else {
       XCTFail("Response should contain candidates")
     }
   }
 
   func testGetCandidatesInPredictMode() throws {
-    let inputQuery = QueryDataBuilder.inputText("こん")
-    let inputResponse = try sendQuery(inputQuery)
+    let configResponse = try sendQuery(QueryBuilder.getConfig())
+    XCTAssertEqual(configResponse.status, .success)
+    guard var profile = configResponse.currentConfig.profiles.first else {
+      XCTFail("No profile returned")
+      return
+    }
+    profile.suggestionListMode = .suggestionListShowPredictiveResults
+    let setResponse = try sendQuery(QueryBuilder.setConfig(profiles: [profile]))
+    XCTAssertEqual(setResponse.status, .success)
+
+    let inputResponse = try sendQuery(QueryBuilder.inputText("こん"))
     XCTAssertEqual(inputResponse.status, .success)
 
-    let candidatesQuery = QueryDataBuilder.getCandidates(isPredictMode: true)
-    let candidatesResponse = try sendQuery(candidatesQuery)
+    let candidatesResponse = try sendQuery(QueryBuilder.getCandidates(isSuggest: true))
 
     XCTAssertEqual(candidatesResponse.status, .success, "Predict mode should work")
 
-    if case .candidates(let candidatesResult) = candidatesResponse.props {
-      // In predict mode, we might get prediction candidates
+    if case .candidates(let candidatesResult) = candidatesResponse.payload {
       XCTAssertTrue(candidatesResult.candidates.count >= 0, "Should return candidates array")
     } else {
       XCTFail("Response should contain candidates")

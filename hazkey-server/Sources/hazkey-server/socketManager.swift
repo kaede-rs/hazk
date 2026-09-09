@@ -14,9 +14,10 @@ class SocketManager {
     private var continueServing = true
 
     private var serverFd: Int32 = -1
-    private var currentClientFd: Int32?
+    private var clientFds: [Int32] = []
     private let socketPath: String
     private var pipeFds: [Int32] = [-1, -1]
+    private let maxClients = 8
 
     private func stopServing(reason: String) {
         guard continueServing else { return }
@@ -109,9 +110,9 @@ class SocketManager {
             // poll stopper
             pollFds.append(pollfd(fd: pipeFds[0], events: Int16(POLLIN), revents: 0))
 
-            // If we have a current client, also poll it
-            if let clientFd = currentClientFd {
-                pollFds.append(pollfd(fd: clientFd, events: Int16(POLLIN), revents: 0))
+            // Poll every currently connected client
+            for fd in clientFds {
+                pollFds.append(pollfd(fd: fd, events: Int16(POLLIN), revents: 0))
             }
 
             let pollRes = poll(&pollFds, nfds_t(pollFds.count), 1000)
@@ -134,7 +135,7 @@ class SocketManager {
             }
 
             // pipe closed by signalhandler
-            if pollFds[1].revents & Int16(POLLIN|POLLHUP) != 0 {
+            if pollFds[1].revents & Int16(POLLIN | POLLHUP) != 0 {
                 break
             }
 
@@ -143,18 +144,20 @@ class SocketManager {
                 handleNewConnection()
             }
 
-            // Check if current client has data
-            if pollFds.count > 2, let clientFd = currentClientFd {
-                let clientEvents = Int32(pollFds[2].revents)
+            for (offset, fd) in clientFds.enumerated() {
+                let pollIndex = offset + 2
+                guard pollIndex < pollFds.count else { continue }
+
+                let clientEvents = Int32(pollFds[pollIndex].revents)
 
                 if clientEvents & POLLHUP != 0 || clientEvents & POLLERR != 0 {
-                    NSLog("Client disconnected or error: \(clientFd)")
-                    closeClient(clientFd)
+                    NSLog("Client disconnected or error: \(fd)")
+                    closeClient(fd)
                     continue
                 }
 
                 if clientEvents & POLLIN != 0 {
-                    handleClientData(clientFd)
+                    handleClientData(fd)
                 }
             }
         }
@@ -165,28 +168,26 @@ class SocketManager {
         var clientLen: socklen_t = socklen_t(MemoryLayout<sockaddr>.size)
         let newClientFd = accept(serverFd, &clientAddr, &clientLen)
 
-        if newClientFd != -1 {
-            // If we already have a client, close it
-            if let existingClientFd = currentClientFd {
-                NSLog("New client connecting, closing existing client: \(existingClientFd)")
-                closeClient(existingClientFd)
-            }
+        guard newClientFd != -1 else { return }
 
-            // Set up the new client
-            NSLog("Client connected: \(newClientFd)")
-
-            // Make client non-blocking
-            let clientFlags = fcntl(newClientFd, F_GETFL, 0)
-            let fcntlRes = fcntl(newClientFd, F_SETFL, clientFlags | O_NONBLOCK)
-            if fcntlRes != 0 {
-                NSLog("fcntl() failed for client")
-                close(newClientFd)
-                currentClientFd = nil
-            } else {
-                currentClientFd = newClientFd
-                delegate?.socketManager(self, clientDidConnect: newClientFd)
-            }
+        guard clientFds.count < maxClients else {
+            NSLog("Too many concurrent clients (\(clientFds.count)), rejecting: \(newClientFd)")
+            close(newClientFd)
+            return
         }
+
+        // Make client non-blocking
+        let clientFlags = fcntl(newClientFd, F_GETFL, 0)
+        let fcntlRes = fcntl(newClientFd, F_SETFL, clientFlags | O_NONBLOCK)
+        if fcntlRes != 0 {
+            NSLog("fcntl() failed for client")
+            close(newClientFd)
+            return
+        }
+
+        NSLog("Client connected: \(newClientFd)")
+        clientFds.append(newClientFd)
+        delegate?.socketManager(self, clientDidConnect: newClientFd)
     }
 
     private func handleClientData(_ clientFd: Int32) {
@@ -224,7 +225,8 @@ class SocketManager {
             // Write response body
             try writeData(to: clientFd, data: response)
 
-            fsync(clientFd)
+            // fix: fsync() はソケットfdに対しては意味を持たない（Linuxでは通常EINVALを返す
+            // no-op）ため、毎レスポンスで無駄なsyscallを発行していただけの行を削除した。
             debugLog("Successfully wrote response")
 
         } catch let error as SocketError {
@@ -256,17 +258,15 @@ class SocketManager {
     private func closeClient(_ clientFd: Int32) {
         NSLog("Closing client connection: \(clientFd)")
         close(clientFd)
-        if currentClientFd == clientFd {
-            currentClientFd = nil
-        }
+        clientFds.removeAll { $0 == clientFd }
         delegate?.socketManager(self, clientDidDisconnect: clientFd)
     }
 
     func closeSocket() {
-        if let clientFd = currentClientFd {
-            close(clientFd)
-            currentClientFd = nil
+        for fd in clientFds {
+            close(fd)
         }
+        clientFds.removeAll()
 
         if serverFd != -1 {
             close(serverFd)
