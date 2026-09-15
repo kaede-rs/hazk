@@ -24,7 +24,7 @@ namespace hazkey::settings {
 
 namespace {
 constexpr char kZenzaiExpectedChecksum[] =
-    "4de930c06bef8c263aa1aa40684af206db4ce1b96375b3b8ed0ea508e0b14f6c";
+    "29c223d4c23327b80fd13ebb5ab2555057a46317997d5da391584ffbef0db673";
 }  // namespace
 
 AiTabController::AiTabController(Ui::MainWindow* ui, QWidget* window,
@@ -161,8 +161,9 @@ void AiTabController::onDownloadZenzaiModel() {
             });
 
     QUrl url(
-        "https://huggingface.co/Miwa-Keita/zenz-v3.1-small-gguf/resolve/main/"
-        "ggml-model-Q5_K_M.gguf");
+      "https://huggingface.co/Miwa-Keita/zenz-v3.2-small-gguf/resolve/main/"
++     "ggml-model-Q5_K_M.gguf");
+
     QNetworkRequest request(url);
 
     currentDownload_ = networkManager_->get(request);
