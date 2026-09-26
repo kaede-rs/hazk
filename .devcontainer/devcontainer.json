@@ -1,0 +1,84 @@
+{
+  "name": "hazkey",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "vscode",
+      "uid": "1000",
+      "gid": "1000"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "init": true,
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+  "mounts": [
+    "source=hazkey-ccache,target=/home/vscode/.cache/ccache,type=volume",
+    "source=hazkey-swiftpm-cache,target=/home/vscode/.cache/org.swift.swiftpm,type=volume"
+  ],
+  "containerEnv": {
+    "CCACHE_DIR": "/home/vscode/.cache/ccache"
+  },
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined"
+  ],
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // C++ / CMake
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "xaver.clang-format",
+        "llvm-vs-code-extensions.lldb-dap",
+        // Qt6 (hazkey-settings)
+        "TheQtCompany.qt-core",
+        "TheQtCompany.qt-qml",
+        "TheQtCompany.qt-cpp",
+        // Swift (hazkey-server)
+        "swiftlang.swift-vscode",
+        // protobuf
+        "DrBlury.protobuf-vsc",
+        // GitHub Actions
+        "github.vscode-github-actions",
+        
+        "eamodio.gitlens",
+        "usernamehw.errorlens",
+        "editorconfig.editorconfig",
+        "ms-azuretools.vscode-containers"
+      ],
+      "settings": {
+        "cmake.configureOnOpen": false,
+        "cmake.configureSettings": {
+          "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+          "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+          "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+        },
+        "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+        "[cpp]": {
+          "editor.defaultFormatter": "xaver.clang-format",
+          "editor.formatOnSave": true
+        },
+        "[c]": {
+          "editor.defaultFormatter": "xaver.clang-format",
+          "editor.formatOnSave": true
+        },
+        "C_Cpp.default.cppStandard": "c++20",
+        "C_Cpp.formatting": "clangFormat",
+        "clang-format.style": "file"
+      }
+    }
+  }
+}
